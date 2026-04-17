@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - TechEcom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-blue-600">TechEcom</h1>
+                <a href="/products" class="text-gray-700 hover:text-blue-600">Products</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/cart" class="text-gray-700 hover:text-blue-600 font-semibold">
+                    <span class="bg-blue-600 text-white rounded-full px-3 py-1">🛒</span>
+                </a>
+                <a href="/account" class="text-gray-700 hover:text-blue-600 font-semibold">My Account</a>
+                <a th:if="${admin}" href="/admin" class="text-gray-700 hover:text-blue-600 font-semibold">Admin</a>
+                <span class="text-gray-700" th:text="${currentUserEmail}"></span>
+                <form action="/logout" method="post" class="inline">
+                    <button type="submit" class="text-red-600 hover:text-red-700">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8">Shopping Cart</h1>
+
+        <div th:if="${cartMessage != null}" class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800" th:text="${cartMessage}"></div>
+        <div th:if="${cartError != null}" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800" th:text="${cartError}"></div>
+
+        <div th:if="${cart.items.isEmpty()}" class="bg-white rounded-lg shadow-md p-8 text-center">
+            <p class="text-gray-600 text-xl mb-4">Your cart is empty</p>
+            <a href="/products" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Continue Shopping</a>
+        </div>
+
+        <div th:unless="${cart.items.isEmpty()}" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Cart Items -->
+            <div class="lg:col-span-2">
+                <div class="space-y-4">
+                    <div th:each="item : ${cart.items}" class="bg-white rounded-lg shadow-md p-6 flex justify-between items-center">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg mb-2" th:text="${item.product.name}"></h3>
+                            <p class="text-gray-600 text-sm mb-2" th:text="${'Price: $' + #numbers.formatDecimal(item.priceAtAddTime, 1, 2)}"></p>
+
+                            <form th:action="@{/cart/update/{id}(id=${item.product.id})}" method="post" class="inline-flex items-center gap-2">
+                                <label class="text-gray-700">Quantity:</label>
+                                <input type="number" name="quantity" th:value="${item.quantity}" min="1"
+                                       class="w-16 px-2 py-1 border border-gray-300 rounded-lg">
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 text-sm">Update</button>
+                            </form>
+                        </div>
+
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-blue-600 mb-4" th:text="'$' + ${#numbers.formatDecimal(item.getTotalPrice(), 1, 2)}"></p>
+                            <form th:action="@{/cart/remove/{id}(id=${item.product.id})}" method="post" class="inline">
+                                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                    <h2 class="text-2xl font-bold mb-6">Order Summary</h2>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between text-gray-700">
+                            <span>Subtotal</span>
+                            <span th:text="'$' + ${#numbers.formatDecimal(cart.getTotalPrice(), 1, 2)}"></span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Shipping</span>
+                            <span th:text="'$' + ${#numbers.formatDecimal(shippingFee, 1, 2)}"></span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Tax</span>
+                            <span th:text="'$' + ${#numbers.formatDecimal(taxAmount, 1, 2)}"></span>
+                        </div>
+                        <div class="border-t pt-4 flex justify-between text-xl font-bold">
+                            <span>Total</span>
+                            <span class="text-blue-600" th:text="'$' + ${#numbers.formatDecimal(grandTotal, 1, 2)}"></span>
+                        </div>
+                    </div>
+
+                    <a th:unless="${cart.items.isEmpty()}" href="/cart/checkout" class="block w-full text-center bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 mb-3">
+                        Proceed to Checkout
+                    </a>
+                    <button th:if="${cart.items.isEmpty()}" type="button" disabled class="w-full bg-gray-300 text-gray-500 font-semibold py-3 rounded-lg mb-3 cursor-not-allowed">
+                        Proceed to Checkout
+                    </button>
+                    <a href="/products" class="block text-center bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4 mt-12">
+        <p>&copy; 2024 TechEcom. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+

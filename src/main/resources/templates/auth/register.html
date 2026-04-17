@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TechEcom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen py-12 px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-8">TechEcom</h1>
+
+        <h2 class="text-2xl font-bold mb-6 text-gray-900">Create Account</h2>
+
+        <!-- Error Messages -->
+        <div th:if="${error}" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg border border-red-300">
+            <p class="font-semibold">❌ Registration Failed</p>
+            <p class="text-sm mt-1" th:text="${error}"></p>
+        </div>
+
+        <!-- Registration Form -->
+        <form action="/register" method="post" class="space-y-4">
+            <div>
+                <label for="fullName" class="block text-gray-700 font-semibold mb-2">Full Name</label>
+                <input type="text"
+                       id="fullName"
+                       name="fullName"
+                       placeholder="John Doe"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                       required>
+            </div>
+
+            <div>
+                <label for="email" class="block text-gray-700 font-semibold mb-2">Email Address</label>
+                <input type="email"
+                       id="email"
+                       name="email"
+                       placeholder="you@example.com"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                       required>
+                <p class="text-xs text-gray-500 mt-1">Use a unique, valid email address</p>
+            </div>
+
+            <div>
+                <label for="password" class="block text-gray-700 font-semibold mb-2">Password</label>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       placeholder="••••••••"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                       minlength="6"
+                       required>
+                <p class="text-xs text-gray-500 mt-1">At least 6 characters</p>
+            </div>
+
+            <div>
+                <label for="passwordConfirm" class="block text-gray-700 font-semibold mb-2">Confirm Password</label>
+                <input type="password"
+                       id="passwordConfirm"
+                       name="passwordConfirm"
+                       placeholder="••••••••"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                       minlength="6"
+                       required>
+                <p class="text-xs text-gray-500 mt-1">Must match your password</p>
+            </div>
+
+            <button type="submit" class="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors">
+                Create My Account
+            </button>
+        </form>
+
+        <p class="text-center text-gray-600 mt-6">
+            Already have an account? <a href="/login" class="text-blue-600 hover:text-blue-700 font-semibold">Login here</a>
+        </p>
+
+        <!-- Terms & Conditions Info -->
+        <div class="mt-6 p-3 bg-gray-100 rounded text-xs text-gray-600 text-center">
+            <p>By creating an account, you agree to our Terms of Service and Privacy Policy</p>
+        </div>
+    </div>
+
+    <script>
+        // Client-side password validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('passwordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                e.preventDefault();
+                alert('Passwords do not match. Please check and try again.');
+                document.getElementById('passwordConfirm').focus();
+            }
+        });
+    </script>
+</body>
+</html>
+

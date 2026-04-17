@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - TechEcom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+<nav class="bg-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold text-blue-600">TechEcom</h1>
+            <a href="/products" class="text-gray-700 hover:text-blue-600">Products</a>
+            <a href="/cart" class="text-gray-700 hover:text-blue-600">Cart</a>
+            <a href="/account" class="text-blue-600 font-semibold">My Account</a>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a th:if="${admin}" href="/admin" class="text-gray-700 hover:text-blue-600 font-semibold">Admin</a>
+            <span class="text-gray-700" th:text="${currentUserEmail}"></span>
+            <form action="/logout" method="post" class="inline">
+                <button type="submit" class="text-red-600 hover:text-red-700">Logout</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-2">Welcome, <span th:text="${fullName}"></span></h1>
+    <p class="text-gray-600 mb-6">Track your account activity and latest checkout notifications.</p>
+
+    <div class="mb-6 rounded-lg border px-4 py-3" th:classappend="${accountActive} ? ' border-green-200 bg-green-50 text-green-800' : ' border-red-200 bg-red-50 text-red-800'">
+        <span class="font-semibold">Account status:</span>
+        <span th:text="${accountActive} ? 'Active' : 'Inactive'"></span>
+    </div>
+
+    <div th:if="${favoriteMessage != null}" class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800" th:text="${favoriteMessage}"></div>
+    <div th:if="${favoriteError != null}" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800" th:text="${favoriteError}"></div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-500">Completed Orders</p>
+            <p class="text-3xl font-bold text-blue-600" th:text="${completedOrdersCount}"></p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-500">Favorited Products</p>
+            <p class="text-3xl font-bold text-blue-600" th:text="${favoriteProductsCount}"></p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-500">Items in Cart</p>
+            <p class="text-3xl font-bold text-blue-600" th:text="${cartItemsCount}"></p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Recent Checkout Notifications</h2>
+        <div th:if="${recentCheckoutEvents.isEmpty()}" class="text-gray-600">No checkout notifications yet.</div>
+        <div th:unless="${recentCheckoutEvents.isEmpty()}" class="space-y-3">
+            <div th:each="event : ${recentCheckoutEvents}" class="rounded-lg border border-gray-200 px-4 py-3">
+                <p class="text-sm text-gray-700" th:text="${event.details}"></p>
+                <p class="text-xs text-gray-500 mt-1" th:text="${event.timestamp}"></p>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
+

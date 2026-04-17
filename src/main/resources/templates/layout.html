@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechEcom - Electronics Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        [hx-indicator] { opacity: 0.3; pointer-events: none; }
+        .htmx-request.htmx-indicator { opacity: 1; pointer-events: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-blue-600">TechEcom</h1>
+                <a href="/products" class="text-gray-700 hover:text-blue-600">Products</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/cart" class="text-gray-700 hover:text-blue-600">
+                    <span class="bg-blue-600 text-white rounded-full px-3 py-1">🛒</span>
+                </a>
+                <sec:authorize access="hasRole('ADMIN')">
+                    <a href="/admin" class="text-gray-700 hover:text-blue-600 font-semibold">Admin</a>
+                </sec:authorize>
+                <sec:authorize access="isAuthenticated()">
+                    <span class="text-gray-700" sec:authentication="name"></span>
+                    <form action="/logout" method="post" class="inline">
+                        <button type="submit" class="text-red-600 hover:text-red-700">Logout</button>
+                    </form>
+                </sec:authorize>
+                <sec:authorize access="!isAuthenticated()">
+                    <a href="/login" class="text-blue-600 hover:text-blue-700 font-semibold">Login</a>
+                </sec:authorize>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div th:if="${success}" class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+            <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            <span th:text="${error}"></span>
+        </div>
+
+        <th:block th:include=":: [fragment]"></th:block>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center py-4 mt-12">
+        <p>&copy; 2024 TechEcom. All rights reserved.</p>
+    </footer>
+
+    <script th:inline="javascript">
+        // WebSocket connection for real-time audit logs (Admin only)
+        const isAdmin = /*[[${#authorization.expression('hasRole("ADMIN")')}]]*/ false;
+        if (isAdmin) {
+            connectWebSocket();
+        }
+
+        function connectWebSocket() {
+            const socket = new SockJS('/ws/audit');
+            const stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function() {
+                console.log('Connected to WebSocket');
+                stompClient.subscribe('/topic/audit-log', function(message) {
+                    console.log('Audit event:', JSON.parse(message.body));
+                    // Update admin dashboard in real-time
+                    if (document.getElementById('auditLogContainer')) {
+                        location.reload();
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,26 @@
+# docker-compose.override.yml - Local Development Overrides
+# Uncomment and modify to override docker-compose.yml settings
+
+version: '3.8'
+
+# Example: Change PostgreSQL password locally
+#services:
+#  postgres:
+#    environment:
+#      POSTGRES_PASSWORD: local_password_override
+
+# Example: Mount local source code for hot reload
+#services:
+#  app:
+#    volumes:
+#      - ./src:/app/src
+#      - ./pom.xml:/app/pom.xml
+
+# Example: Enable debug mode
+#services:
+#  app:
+#    environment:
+#      JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+#    ports:
+#      - "5005:5005"  # Debug port
+

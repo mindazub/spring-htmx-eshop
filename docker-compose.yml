@@ -1,0 +1,52 @@
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: techeco-db
+    environment:
+      POSTGRES_USER: techapp
+      POSTGRES_PASSWORD: techapp_pass_2024
+      POSTGRES_DB: techeco_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - techeco-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U techapp -d techeco_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: techeco-app:latest
+    container_name: techeco-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/techeco_db
+      SPRING_DATASOURCE_USERNAME: techapp
+      SPRING_DATASOURCE_PASSWORD: techapp_pass_2024
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_PROFILES_ACTIVE: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - techeco-network
+
+networks:
+  techeco-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+
+
+

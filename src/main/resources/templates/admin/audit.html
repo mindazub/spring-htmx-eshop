@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - TechEcom Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">TechEcom Admin</h1>
+            <div class="flex items-center space-x-4">
+                <a href="/admin" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                <span class="text-gray-700" sec:authentication="name"></span>
+                <form action="/logout" method="post" class="inline">
+                    <button type="submit" class="text-red-600 hover:text-red-700">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-bold">Audit Logs</h1>
+            <div class="text-sm text-gray-600">
+                <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Real-time Updates</span>
+            </div>
+        </div>
+
+        <!-- Event Type Filter -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-8">
+            <div class="flex gap-4 flex-wrap">
+                <a href="/admin/audit" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">All Events</a>
+                <a href="/admin/audit?type=LOGIN" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">Login</a>
+                <a href="/admin/audit?type=PAGE_VIEW" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">Page Views</a>
+                <a href="/admin/audit?type=CART_ADDED" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">Cart Activities</a>
+                <a href="/admin/audit?type=LOGOUT" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">Logout</a>
+            </div>
+        </div>
+
+        <!-- Audit Logs Table -->
+        <div id="auditLogContainer" class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-100 border-b">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-semibold text-gray-700">Event</th>
+                            <th class="px-6 py-3 text-left font-semibold text-gray-700">User</th>
+                            <th class="px-6 py-3 text-left font-semibold text-gray-700">Details</th>
+                            <th class="px-6 py-3 text-left font-semibold text-gray-700">IP Address</th>
+                            <th class="px-6 py-3 text-left font-semibold text-gray-700">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="log : ${auditLogs}" class="border-b hover:bg-gray-50">
+                            <td class="px-6 py-3">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold"
+                                      th:classappend="${log.eventType} == 'LOGIN' ? 'bg-green-100 text-green-800' : ${log.eventType} == 'LOGOUT' ? 'bg-red-100 text-red-800' : ${log.eventType} == 'CART_ADDED' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'"
+                                      th:text="${log.eventType}"></span>
+                            </td>
+                            <td class="px-6 py-3">
+                                <p class="font-semibold" th:text="${log.userEmail}"></p>
+                            </td>
+                            <td class="px-6 py-3 text-sm text-gray-600" th:text="${log.details != null ? log.details : 'N/A'}"></td>
+                            <td class="px-6 py-3 text-sm text-gray-600" th:text="${log.ipAddress}"></td>
+                            <td class="px-6 py-3 text-sm whitespace-nowrap" th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                        </tr>
+                        <tr th:if="${auditLogs.isEmpty()}">
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-600">
+                                No audit logs found
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4 mt-12">
+        <p>&copy; 2024 TechEcom. All rights reserved.</p>
+    </footer>
+
+    <script th:inline="javascript">
+        // Connect to WebSocket for real-time updates
+        function connectWebSocket() {
+            const socket = new SockJS('/ws/audit');
+            const stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function() {
+                console.log('Connected to audit stream');
+                stompClient.subscribe('/topic/audit-log', function(message) {
+                    console.log('New audit event:', message.body);
+                    // Refresh the page when new event arrives
+                    location.reload();
+                });
+            }, function(error) {
+                console.log('WebSocket connection error:', error);
+            });
+        }
+
+        connectWebSocket();
+    </script>
+</body>
+</html>
+
